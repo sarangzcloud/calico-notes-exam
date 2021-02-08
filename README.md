@@ -77,3 +77,13 @@ To do this we specify order value of 600 in this policy, which gives this higher
                                               - 192.168.0.0/16
                                               - 198.18.0.0/15
                                     EOF
+
+
+
+Manging trust across different teams.
+
+The secops team is responsible for creating Namespaces and Services accounts for dev teams. They are also responsible for writing Calico Global Network Policies to define the cluster’s overall security posture. Kubernetes RBAC is set up so that only they can do this.
+
+Dev teams are given Kubernetes RBAC permissions to create pods and Kubernetes Network Policies in their Namespaces, and they can use, but not modify any Service Account in their Namespaces. 
+
+In this scenario, the secops team can control which teams should be allowed to have pods that access the internet. If a dev team is allowed to have pods that access the internet then the dev team can choose which of their pods access the internet by using the appropriate Service Account.
