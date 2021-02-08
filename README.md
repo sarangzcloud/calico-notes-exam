@@ -16,3 +16,11 @@ calico-kube-controllers: Runs a variety of Calico specific controllers that auto
 Calico network policies are more advanced than Kubernetes Net Pol.\
 They can add selectors like service accounts, setup order / precedence for rules and many more.
 
+
+
+By default Kubernetes allows all. Hence add defaut Deny can be added on namespace basis.\
+Calico globalnetwork policy can be used to achive the same on Cluster level rather than namespace levels.
+
+
+Be careful as this may break the entire cluster.
+USe namespace selectors and other egress rules for pod etc like kubedns, calico ns objects etc.
