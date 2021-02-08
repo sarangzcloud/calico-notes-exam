@@ -24,3 +24,25 @@ Calico globalnetwork policy can be used to achive the same on Cluster level rath
 
 Be careful as this may break the entire cluster.
 USe namespace selectors and other egress rules for pod etc like kubedns, calico ns objects etc.
+
+
+Sample file
+
+            cat <<EOF | calicoctl apply -f -
+            apiVersion: projectcalico.org/v3
+            kind: GlobalNetworkPolicy
+            metadata:
+              name: default-app-policy
+            spec:
+              namespaceSelector: has(projectcalico.org/name) && projectcalico.org/name not in {"kube-system", "calico-system"}
+              types:
+              - Ingress
+              - Egress
+              egress:
+                - action: Allow
+                  protocol: UDP
+                  destination:
+                    selector: k8s-app == "kube-dns"
+                    ports:
+                      - 53
+            EOF
