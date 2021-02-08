@@ -87,3 +87,57 @@ The secops team is responsible for creating Namespaces and Services accounts for
 Dev teams are given Kubernetes RBAC permissions to create pods and Kubernetes Network Policies in their Namespaces, and they can use, but not modify any Service Account in their Namespaces. 
 
 In this scenario, the secops team can control which teams should be allowed to have pods that access the internet. If a dev team is allowed to have pods that access the internet then the dev team can choose which of their pods access the internet by using the appropriate Service Account.
+
+
+
+
+Hostendpoints\
+Thus far, we've created policies that protect pods in Kubernetes.\
+However, Calico Policy can also be used to protect the host interfaces in any standalone Linux node (such as a baremetal node, cloud instance or virtual machine) outside the cluster.
+
+
+ Host endpoints are non-namespaced. So in order to secure host endpoints we'll need to use Calico global network policies. In a similar fashion to how we created the default-app-policy for pods in the previous module which allowed DNS but default denied all other traffic, we’ll create a default-node-policy that allows processes running in the host network namespace to connect to each other, but results in default-deny behavior for any other node connections.
+ 
+
+             cat <<EOF| calicoctl apply -f -
+            ---
+            apiVersion: projectcalico.org/v3
+            kind: GlobalNetworkPolicy
+            metadata:
+              name: default-node-policy
+            spec:
+              selector: has(kubernetes.io/hostname)
+              ingress:
+              - action: Allow
+                protocol: TCP
+                source:
+                  nets:
+                  - 127.0.0.1/32
+              - action: Allow
+                protocol: UDP
+                source:
+                  nets:
+                  - 127.0.0.1/32
+            EOF
+ 
+ 
+
+failsafe\
+The answer is that Calico has a configurable list of “failsafe” ports which take precedence over any policy. These failsafe ports ensure the connections required for the host networked Kubernetes and Calico control planes processes to function are always allowed (assuming your failsafe ports are correctly configured). This means you don’t have to worry about defining policy rules for these. The default failsafe ports also allow SSH traffic so you can always log into your nodes.
+
+
+Lock down node port access\
+Kube-proxy load balances incoming connections to node ports to the pods backing the corresponding service. This process involves using DNAT (Destination Network Address Translation) to map the connection to the node port to a pod IP address and port.
+
+
+We can specify who from outside can access.
+
+
+Course  Week 2  Network Policy for Hosts and NodePorts  Restrict Access to Kubernetes NodePorts
+
+
+
+
+
+
+
