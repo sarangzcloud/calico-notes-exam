@@ -150,7 +150,9 @@ kubectl cluster-info dump | grep -m 2 -E "service-cidr|cluster-cidr"
 
 
 Choosing the best network \
-https://docs.projectcalico.org/archive/v3.16/networking/determine-best-networking
+
+https://docs.projectcalico.org/networking/determine-best-networking
+
 
 
 
