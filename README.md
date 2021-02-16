@@ -156,7 +156,54 @@ https://docs.projectcalico.org/networking/determine-best-networking
 
 
 
+The Summary pods use this service to connect to the Database pods. Kube-proxy uses DNAT to map the Cluster IP to the chosen backing pod.
+
+
+In summary, for a packet being sent to a clusterIP:
+
+The KUBE-SERVICES chain matches on the clusterIP and jumps to the corresponding KUBE-SVC-XXXXXXXXXXXXXXXX chain.
+
+The KUBE-SVC-XXXXXXXXXXXXXXXX chain load balances the packet to a random service endpoint KUBE-SEP-XXXXXXXXXXXXXXXX chain.
+
+The KUBE-SEP-XXXXXXXXXXXXXXXX chain DNATs the packet so it will get routed to the service endpoint (backing pod).
+
+Finally, let's return to host1 to take a look at NodePorts in the next section by using the exit command.
 
 
 
 
+Calico's eBPF dataplane is an alternative to the default standard Linux dataplane (which is iptables based). The eBPF dataplane has a number of advantages:
+
+It scales to higher throughput.
+It uses less CPU per GBit.
+It has native support for Kubernetes services (without needing kube-proxy) that:
+Reduces first packet latency for packets to services.
+Preserves external client source IP addresses all the way to the pod.
+Supports DSR (Direct Server Return) for more efficient service routing.
+Uses less CPU than kube-proxy to keep the dataplane in sync.
+
+
+
+
+
+To enable Calico eBPF we need to:
+
+Configure Calico so it knows how to connect directly to the API server (rather than relying on kube-proxy to help it connect)
+Disable kube-proxy
+Configure Calico to switch to the eBPF dataplane
+
+
+
+- The Kubernetes network model specifies that pod can communicate with each other directly without NAT. But going via a Kubernetes Service is not classed as direct, and inherently involved at least DNAT as part of load balancing the service to the backing pods.
+
+
+
+
+- Node port services do not normally preserve client source IP address, because return packets need to be routed via the ingress node in order to reverse the DNAT associated with the service load balancing.
+
+
+https://kubernetes.io/docs/tutorials/services/source-ip/
+
+Packets sent to ClusterIP from within the cluster are never source NAT'd if you're running kube-proxy in iptables mode, (the default). \
+Packets sent to Services with Type=NodePort are source NAT'd by default.\
+Packets sent to Services with Type=LoadBalancer are source NAT'd by default, because all schedulable Kubernetes nodes in the Ready state are eligible for load-balanced traffic. So if packets arrive at a node without an endpoint, the system proxies it to a node with an endpoint, replacing the source IP on the packet with the IP of the node 
