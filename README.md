@@ -137,6 +137,22 @@ Course  Week 2  Network Policy for Hosts and NodePorts  Restrict Access to Kuber
 
 
 
+Week 3:-- \
+Calico makes it easy to encrypt on the wire in-cluster pod traffic in a Calico cluster using WireGuard. WireGuard utilizes state-of-the-art cryptography and aims to be faster, simpler, leaner, than alternative encryption techniques such as IPsec.
+
+
+Calico handles all the configuration of WireGuard for you to provide full mesh encryption across all the nodes in your cluster.  WireGuard is included in the latest Linux kernel versions by default, and if running older Linux versions you can easily load it as a kernel module. (Note that if you have some nodes that don’t have WireGuard support, then traffic to/from those specific nodes will be unencrypted.)
+
+
+
+kubectl cluster-info dump | grep -m 2 -E "service-cidr|cluster-cidr"
+
+
+
+Choosing the best network \
+https://docs.projectcalico.org/archive/v3.16/networking/determine-best-networking
+
+
 
 
 
